@@ -19,6 +19,7 @@ namespace {
 		{LanguageSetting::German, []() -> const std::string& { return Localization::STranslate(KMT_LanguageGermanTooltip); }},
 		{LanguageSetting::French, []() -> const std::string& { return Localization::STranslate(KMT_LanguageFrenchTooltip); }},
 		{LanguageSetting::Spanish, []() -> const std::string& { return Localization::STranslate(KMT_LanguageSpanishTooltip); }},
+		{LanguageSetting::Chinese, []() -> const std::string& { return Localization::STranslate(KMT_LanguageChineseTooltip); }},
 	};
 }
 
@@ -40,7 +41,7 @@ void SettingsUI::Draw() {
 	KeyBinds::Modifier arcdpsModifier = KeyBindHandler::GetArcdpsModifier();
 	KeyBinds::Key oldKey = settings.settings.windowKey;
 	if (ImGuiEx::KeyCodeInput(Localization::STranslate(ET_Shortcut).c_str(), settings.settings.windowKey,
-	                          GlobalObjects::CURRENT_LANGUAGE, GlobalObjects::CURRENT_HKL,
+	                          settings.settings.language==LanguageSetting::LikeGame?GlobalObjects::CURRENT_LANGUAGE:static_cast<Language>(settings.settings.language), GlobalObjects::CURRENT_HKL,
 	                          ImGuiEx::KeyCodeInputFlags_FixedModifier, arcdpsModifier)) {
 		KeyBindHandler::instance().UpdateKeys(oldKey, settings.settings.windowKey);
 	}

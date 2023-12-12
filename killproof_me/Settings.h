@@ -49,7 +49,7 @@ enum class LanguageSetting {
 	French = 2,
 	German = 3,
 	Spanish = 4,
-	// Chinese = 5
+	Chinese = 5
 };
 
 std::string to_string(LanguageSetting pLang);
