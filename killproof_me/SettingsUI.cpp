@@ -20,6 +20,7 @@ namespace {
 		{LanguageSetting::French, []() { return std::string(Localization::STranslate(KMT_LanguageFrenchTooltip)); }},
 		{LanguageSetting::Spanish, []() { return std::string(Localization::STranslate(KMT_LanguageSpanishTooltip)); }},
 		{LanguageSetting::Chinese, []() { return std::string(Localization::STranslate(KMT_LanguageChineseTooltip)); }},
+		{LanguageSetting::TChinese, []() { return std::string(Localization::STranslate(KMT_LanguageChineseTooltip)); }},
 	};
 }
 
