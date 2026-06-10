@@ -7,9 +7,9 @@
 
 #include "Killproofs.h"
 
-#include "extension/UpdateChecker.h"
-#include "extension/UpdateCheckerBase.h"
-#include "unofficial_extras/Definitions.h"
+#include "ArcdpsExtension/UpdateChecker.h"
+#include "ArcdpsExtension/UpdateCheckerBase.h"
+#include "ArcdpsUnofficialExtras/Definitions.h"
 
 constexpr auto KILLPROOF_ME_PLUGIN_NAME = "killproof.me";
 
@@ -26,6 +26,7 @@ extern std::mutex instancePlayersMutex;
 extern HMODULE self_dll;
 extern std::string selfAccountName;
 extern bool extrasLoaded;
+extern uint32_t currentMap;
 
 void loadAllKillproofs();
 void loadKillproofsSizeChecked(Player& player);
@@ -36,6 +37,8 @@ inline bool fileExists(const std::string& filename) {
 	return (stat(filename.c_str(), &buffer) == 0);
 }
 
+void removePlayer(const Player& pPlayer, AddedBy pAddedByToDelete);
+void removePlayer(uintptr_t pId, AddedBy pAddedByToDelete);
 void removePlayer(const std::string& username, AddedBy addedByToDelete);
 // void removePlayerInstance(const std::string& username);
 // void removePlayerTracking(const std::string& username);
@@ -47,12 +50,7 @@ void updateCommander(const std::string& commanderName);
 class GlobalObjects {
 public:
 	// Updating myself stuff
-	static inline std::unique_ptr<UpdateCheckerBase::UpdateState> UPDATE_STATE = nullptr;
-
-	// arc keyboard modifier
-	static inline DWORD ARC_GLOBAL_MOD1 = 0;
-	static inline DWORD ARC_GLOBAL_MOD2 = 0;
-	static inline DWORD ARC_GLOBAL_MOD_MULTI = 0;
+	static inline std::unique_ptr<ArcdpsExtension::UpdateCheckerBase::UpdateState> UPDATE_STATE = nullptr;
 
 	// Arc export Cache
 	static inline bool ARC_HIDE_ALL = false;
@@ -63,7 +61,6 @@ public:
 
 	// Arc helper functions
 	static void UpdateArcExports();
-	static bool ModsPressed();
 	static bool CanMoveWindows();
 
 	// other

@@ -3,14 +3,15 @@
 #include "Settings.h"
 #include "SettingsUI.h"
 
-#include "extension/arcdps_structs.h"
-#include "extension/KeyBindHandler.h"
-#include "extension/KeyInput.h"
-#include "extension/MumbleLink.h"
-#include "extension/UpdateChecker.h"
-#include "extension/Windows/PositioningComponent.h"
-#include "extension/Windows/Demo/DemoTableWindow.h"
-#include "extension/Windows/Demo/DemoWindow.h"
+#include "ArcdpsExtension/arcdps_structs.h"
+#include "ArcdpsExtension/KeyBindHandler.h"
+#include "ArcdpsExtension/KeyInput.h"
+#include "ArcdpsExtension/MumbleLink.h"
+#include "ArcdpsExtension/UpdateChecker.h"
+#include "ArcdpsExtension/Windows/PositioningComponent.h"
+#include "ArcdpsExtension/Windows/Demo/DemoTableWindow.h"
+#include "ArcdpsExtension/Windows/Demo/DemoWindow.h"
+#include "ArcdpsExtension/SimpleNetworkStack.h"
 
 #include <d3d11.h>
 #include <d3d9.h>
@@ -29,6 +30,8 @@ namespace {
 
 	bool lastFrameShow = false;
 	bool initFailed = false;
+
+	bool mumbleReloadMapPending = false;
 }
 
 BOOL APIENTRY DllMain(HMODULE pModule,
@@ -50,7 +53,7 @@ BOOL APIENTRY DllMain(HMODULE pModule,
 	return TRUE;
 }
 
-uintptr_t mod_windows(const char* windowname) {
+void mod_windows(const char* windowname) {
 	if (!windowname) {
 		KillproofUI::instance().DrawOptionCheckbox();
 #if _DEBUG
@@ -58,10 +61,9 @@ uintptr_t mod_windows(const char* windowname) {
 		DemoTableWindow::instance().DrawOptionCheckbox();
 #endif
 	}
-	return 0;
 }
 
-uintptr_t mod_imgui(uint32_t not_charsel_or_loading) {
+void mod_imgui(uint32_t not_charsel_or_loading, uint32_t hide_if_combat_or_ooc) {
 #if PERFORMANCE_LOG
 	const auto& beforePoint = std::chrono::high_resolution_clock::now();
 #endif
@@ -82,6 +84,32 @@ uintptr_t mod_imgui(uint32_t not_charsel_or_loading) {
 			loadAllKillproofs();
 		}
 		lastFrameShow = showKillproof;
+
+		if (mumbleReloadMapPending) {
+			mumbleReloadMapPending = false;
+			if (mapViewOfMumbleFile) {
+				LinkedMem* linkedMem = static_cast<LinkedMem*>(mapViewOfMumbleFile);
+				uint32_t mapId = linkedMem->getMumbleContext()->mapId;
+				currentMap = mapId;
+				auto& ui = KillproofUI::instance();
+
+				// custom setup for aerodrome, based on settings
+				if (mapId == AerodromeId) {
+					if (Settings::instance().settings.showMapBasedStrikes) {
+						mapId = AerodromeIdStrikes;
+					} else {
+						mapId = AerodromeIdRaids;
+					}
+				}
+
+				const auto& setup = mapIdToColumnSetup.find(mapId);
+				if (setup == mapIdToColumnSetup.end()) {
+					ui.GetTable()->ResetSpecificColumnSetup();
+				} else {
+					ui.GetTable()->SetSpecificColumnSetup(setup->second);
+				}
+			}
+		}
 	}
 
 #if PERFORMANCE_LOG
@@ -89,12 +117,10 @@ uintptr_t mod_imgui(uint32_t not_charsel_or_loading) {
 	const auto& diff = afterPoint - beforePoint;
 	ARC_LOG_FILE(std::format("mod_imgui: {}", diff.count()).c_str());
 #endif
-
-	return 0;
 }
 
 /* window callback -- return is assigned to umsg (return zero to not be processed by arcdps or game) */
-uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+UINT mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 #if PERFORMANCE_LOG
 	const auto& beforePoint = std::chrono::high_resolution_clock::now();
 #endif
@@ -111,38 +137,8 @@ uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		auto const io = &ImGui::GetIO();
 
 		switch (uMsg) {
-			case WM_KEYUP:
-			case WM_SYSKEYUP: {
-				const int vkey = (int)wParam;
-				io->KeysDown[vkey] = false;
-				if (vkey == VK_CONTROL) {
-					io->KeyCtrl = false;
-				} else if (vkey == VK_MENU) {
-					io->KeyAlt = false;
-				} else if (vkey == VK_SHIFT) {
-					io->KeyShift = false;
-				}
-				break;
-			}
-			case WM_KEYDOWN:
-			case WM_SYSKEYDOWN: {
-				const int vkey = (int)wParam;
-				if (vkey == VK_CONTROL) {
-					io->KeyCtrl = true;
-				} else if (vkey == VK_MENU) {
-					io->KeyAlt = true;
-				} else if (vkey == VK_SHIFT) {
-					io->KeyShift = true;
-				}
-				io->KeysDown[vkey] = true;
-				break;
-			}
 			case WM_ACTIVATEAPP: {
 				GlobalObjects::UpdateArcExports();
-				if (!wParam) {
-					io->KeysDown[GlobalObjects::ARC_GLOBAL_MOD1] = false;
-					io->KeysDown[GlobalObjects::ARC_GLOBAL_MOD2] = false;
-				}
 				break;
 			}
 			// track current input language
@@ -170,7 +166,7 @@ uintptr_t mod_wnd(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 /* combat callback -- may be called asynchronously. return ignored */
 /* one participant will be party/squad, or minion of. no spawn statechange events. despawn statechange only on marked boss npcs */
-uintptr_t mod_combat(cbtevent* ev, ag* src, ag* dst, const char* skillname, uint64_t id, uint64_t revision) {
+void mod_combat(cbtevent* ev, ag* src, ag* dst, const char* skillname, uint64_t id, uint64_t revision) {
 #if PERFORMANCE_LOG
 	const auto& beforePoint = std::chrono::high_resolution_clock::now();
 #endif
@@ -181,12 +177,12 @@ uintptr_t mod_combat(cbtevent* ev, ag* src, ag* dst, const char* skillname, uint
 			/* notify tracking change */
 			if (!src->elite) {
 				// only run, when names are set and not null
-				if (src->name != nullptr && src->name[0] != '\0' && dst->name != nullptr && dst->name[0] != '\0') {
+				if (src->name != nullptr && dst->name != nullptr) {
 
 					std::string username(dst->name);
 
 					// remove ':' at the beginning of the name.
-					if (username.at(0) == ':') {
+					if (!username.empty() && username.at(0) == ':') {
 						username.erase(0, 1);
 					}
 
@@ -242,28 +238,26 @@ uintptr_t mod_combat(cbtevent* ev, ag* src, ag* dst, const char* skillname, uint
 					}
 					/* remove */
 					else {
+						ARC_LOG(std::format("remove event for user: {}", src->id).c_str());
 						// do NOT remove yourself
-						if (username != selfAccountName) {
-							std::scoped_lock<std::mutex, std::mutex> guard(trackedPlayersMutex, instancePlayersMutex);
+						const auto& playerIt = std::ranges::find_if(cachedPlayers, [pId = src->id](const auto& pPlayer) {
+							return pPlayer.second.id == pId;
+						});
+						if (playerIt != cachedPlayers.end()) {
+							ARC_LOG(std::format("found player to remove for user [{}]: {} - {}", src->id, playerIt->second.username, playerIt->second.self).c_str());
 
-							// remove specific user
-							removePlayer(username, AddedBy::Arcdps);
+							if (!playerIt->second.self) {
+								std::scoped_lock guard(trackedPlayersMutex, instancePlayersMutex);
+
+								// remove specific user
+								removePlayer(playerIt->second, AddedBy::Arcdps);
+							}
 						}
 					}
 				}
 			}
 		} else {
-			if (ev->is_statechange == CBTS_TAG) {
-				// some other person is tag now!
-				uintptr_t id = src->id;
-				for (auto& cachedPlayer : cachedPlayers | std::views::values) {
-					if (cachedPlayer.id == id) {
-						cachedPlayer.commander = true;
-					} else {
-						cachedPlayer.commander = false;
-					}
-				}
-			} else if (ev->is_statechange == CBTS_ENTERCOMBAT) {
+			if (ev->is_statechange == CBTS_ENTERCOMBAT) {
 				if (src && src->name) {
 					const auto& player = cachedPlayers.find(src->name);
 					if (player != cachedPlayers.end()) {
@@ -332,11 +326,9 @@ uintptr_t mod_combat(cbtevent* ev, ag* src, ag* dst, const char* skillname, uint
 	const auto& diff = afterPoint - beforePoint;
 	ARC_LOG_FILE(std::format("mod_combat: {}", diff.count()).c_str());
 #endif
-
-	return 0;
 }
 
-uintptr_t mod_combat_local(cbtevent* ev, ag* src, ag* dst, const char* skillname, uint64_t id, uint64_t revision) {
+void mod_combat_local(cbtevent* ev, ag* src, ag* dst, const char* skillname, uint64_t id, uint64_t revision) {
 	/* ev is null. dst will only be valid on tracking add. skillname will also be null */
 	if (!ev) {
 		/* notify tracking change */
@@ -357,30 +349,16 @@ uintptr_t mod_combat_local(cbtevent* ev, ag* src, ag* dst, const char* skillname
 					if (dst->self) {
 						ARC_LOG("self added!");
 
-						if (mapViewOfMumbleFile) {
-							LinkedMem* linkedMem = static_cast<LinkedMem*>(mapViewOfMumbleFile);
-							uint32_t mapId = linkedMem->getMumbleContext()->mapId;
-
-							const auto& setup = mapIdToColumnSetup.find(mapId);
-							if (setup == mapIdToColumnSetup.end()) {
-								KillproofUI::instance().GetTable()->ResetSpecificColumnSetup();
-							} else {
-								KillproofUI::instance().GetTable()->SetSpecificColumnSetup(setup->second);
-							}
-						}
+						mumbleReloadMapPending = true;
 					}
 				}
 			}
 		}
 	}
-
-	return 0;
 }
 
-uintptr_t mod_options() {
+void mod_options() {
 	SettingsUI::instance().Draw();
-
-	return 0;
 }
 
 /* initialize mod -- return table that arcdps will use for callbacks */
@@ -391,19 +369,34 @@ arcdps_exports* mod_init() {
 	UpdateChecker& updateChecker = UpdateChecker::instance();
 	const auto& currentVersion = updateChecker.GetCurrentVersion(SELF_DLL);
 
+	// Singleton class is not thread safe!!
+	SimpleNetworkStack::instance();
+
 	try {
 		// Setup iconLoader
-		IconLoader::instance().Setup(SELF_DLL, d3d9Device, d3d11Device);
+		IconLoader::init(SELF_DLL, d3d11Device);
+		RegisterIcons();
 
 		// Clear old Files
 		updateChecker.ClearFiles(SELF_DLL);
 
 		// check for new version on github
 		if (currentVersion) {
-			GlobalObjects::UPDATE_STATE = std::move(
+			GlobalObjects::UPDATE_STATE = 
 				updateChecker.CheckForUpdate(SELF_DLL, currentVersion.value(),
-															  "knoxfighter/arcdps-killproof.me-plugin", false));
+															  "knoxfighter/arcdps-killproof.me-plugin", false);
 		}
+
+		std::string version;
+		if (currentVersion) {
+			version = updateChecker.GetVersionAsString(currentVersion.value());
+		} else {
+			version = "unknown";
+		}
+
+		std::string userAgent = "arcdps-killproof.me-plugin/";
+		userAgent.append(version);
+		SimpleNetworkStack::instance().SetUserAgent(userAgent);
 
 		Settings::instance().load();
 
@@ -468,12 +461,8 @@ extern "C" __declspec(dllexport) void* get_init_addr(char* arcversionstr, ImGuiC
 	ARC_LOG = (e3_func_ptr)GetProcAddress(ARC_DLL, "e8");
 
 	// dx11 not available in older arcdps versions
-	if (dxver == 11) {
-		auto swapChain = static_cast<IDXGISwapChain*>(dxptr);
-		swapChain->GetDevice(__uuidof(d3d11Device), reinterpret_cast<void**>(&d3d11Device));
-	} else {
-		d3d9Device = static_cast<IDirect3DDevice9*>(dxptr);
-	}
+	auto swapChain = static_cast<IDXGISwapChain*>(dxptr);
+	swapChain->GetDevice(__uuidof(d3d11Device), reinterpret_cast<void**>(&d3d11Device));
 
 	// install imgui hooks
 	PositioningComponentImGuiHook::InstallHooks(imguicontext);

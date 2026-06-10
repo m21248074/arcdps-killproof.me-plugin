@@ -1,14 +1,16 @@
 #pragma once
 
 #include "global.h"
+#include "Icons.h"
 #include "Lang.h"
 #include "Killproofs.h"
 #include "Player.h"
 #include "resource.h"
 
-#include "extension/IconLoader.h"
-#include "extension/Windows/MainTable.h"
+#include "ArcdpsExtension/IconLoader.h"
+#include "ArcdpsExtension/Windows/MainTable.h"
 
+using namespace ArcdpsExtension;
 using std::string_literals::operator ""s;
 
 constexpr ImU32 JOIN_TIME_ID = 32;
@@ -26,18 +28,14 @@ static std::optional<size_t> OLC_TEXTURE;
 static std::optional<size_t> DAGDA_TEXTURE;
 static std::optional<size_t> CERUS_TEXTURE;
 
-#define GET_TEXTURE_CUSTOM(optional, id) \
-	std::invoke([] { \
-		auto& iconLoader = IconLoader::instance(); \
-		if (!optional) \
-			optional = iconLoader.LoadTexture(id); \
-		return iconLoader.GetTexture(optional.value()); \
-	})
+static void* draw_texture(KillproofIcons id) {
+	return IconLoader::instance().Draw(id);
+}
 
 // the index is used for the order 
 static const std::vector<MainTableColumn> COLUMN_SETUP {
 	// general stuff
-	{JOIN_TIME_ID, [] {return "#"s;}, []{return nullptr;}, "0", true},
+	{JOIN_TIME_ID, [] {return "#";}, []{return nullptr;}, "0", true},
 	{ACCOUNT_NAME_ID, [] {return Localization::STranslate(KMT_AccountName);}, []{return nullptr;}, "0", true},
 	{CHARACTER_NAME_ID, [] {return Localization::STranslate(KMT_CharacterName);}, []{return nullptr;}, "0", true},
 	{KILLPROOF_ID_ID, [] {return Localization::STranslate(KMT_KillproofId);}, []{return nullptr;}, "0", true},
@@ -46,91 +44,424 @@ static const std::vector<MainTableColumn> COLUMN_SETUP {
 	// Raids
 	// {0, [] {return to_string_short(Killproof::li);}, []{ return GET_TEXTURE(LI, ID_LI); }, "1", true},
 	// {1, [] {return to_string_short(Killproof::ld);}, []{ return GET_TEXTURE(LD, ID_LD); }, "1", true},
-	{2, [] {return to_string_short(Killproof::liLd);}, []{ return GET_TEXTURE(LI, ID_LI); }, "1", true},
+	{Killproof::liLd, [] {return to_string_short(Killproof::liLd);}, []{ return draw_texture(KillproofIcons::LI); }, "1", true},
 
 	// fractals
-	{3, [] {return to_string_short(Killproof::uce);}, []{ return GET_TEXTURE_CUSTOM(UCE_TEXTURE, ID_UFE); }, "2", true},
-	{4, [] {return to_string_short(Killproof::ufe);}, []{ return GET_TEXTURE_CUSTOM(UCE_TEXTURE, ID_UFE); }, "2", true},
+	{Killproof::uce, [] {return to_string_short(Killproof::uce);}, []{ return draw_texture(KillproofIcons::UFE); }, "2", true},
+	{Killproof::ufe, [] {return to_string_short(Killproof::ufe);}, []{ return draw_texture(KillproofIcons::UFE); }, "2", true},
 
 	// W1
-	{5, [] {return to_string_short(Killproof::vg);}, []{ return GET_TEXTURE(VG, ID_VG); }, "1.1", [] {return to_string_long(Killproof::vg);}, false},
-	{6, [] {return to_string_short(Killproof::gorse);}, []{ return GET_TEXTURE(Gorse, ID_Gorse); }, "1.1", [] {return to_string_long(Killproof::gorse);}, false},
-	{7, [] {return to_string_short(Killproof::sabetha);}, []{ return GET_TEXTURE(Sabetha, ID_Sabetha); }, "1.1", [] {return to_string_long(Killproof::sabetha);}, false},
+	{Killproof::vg, [] {return to_string_short(Killproof::vg);}, []{ return draw_texture(KillproofIcons::VG); }, "1.1", [] {return to_string_long(Killproof::vg);}, false},
+	{Killproof::gorse, [] {return to_string_short(Killproof::gorse);}, []{ return draw_texture(KillproofIcons::Gorse); }, "1.1", [] {return to_string_long(Killproof::gorse);}, false},
+	{Killproof::sabetha, [] {return to_string_short(Killproof::sabetha);}, []{ return draw_texture(KillproofIcons::Sabetha); }, "1.1", [] {return to_string_long(Killproof::sabetha);}, false},
 
 	// W2
-	{8, [] {return to_string_short(Killproof::sloth);}, []{ return GET_TEXTURE(Sloth, ID_Sloth); }, "1.2", false},
-	{9, [] {return to_string_short(Killproof::matthias);}, []{ return GET_TEXTURE(Matt, ID_Matt); }, "1.2", [] {return to_string_long(Killproof::matthias);}, false},
+	{Killproof::sloth, [] {return to_string_short(Killproof::sloth);}, []{ return draw_texture(KillproofIcons::Sloth); }, "1.2", false},
+	{Killproof::matthias, [] {return to_string_short(Killproof::matthias);}, []{ return draw_texture(KillproofIcons::Matt); }, "1.2", [] {return to_string_long(Killproof::matthias);}, false},
 
 	// W3
-	{10, [] {return to_string_short(Killproof::escort);}, []{ return GET_TEXTURE(Escort, ID_Escort); }, "1.3", false},
-	{11, [] {return to_string_short(Killproof::kc);}, []{ return GET_TEXTURE(KC, ID_KC); }, "1.3", [] {return to_string_long(Killproof::kc);}, false},
-	{12, [] {return to_string_short(Killproof::xera);}, []{ return GET_TEXTURE(Xera, ID_Xera); }, "1.3", false},
+	{Killproof::escort, [] {return to_string_short(Killproof::escort);}, []{ return draw_texture(KillproofIcons::Escort); }, "1.3", false},
+	{Killproof::kc, [] {return to_string_short(Killproof::kc);}, []{ return draw_texture(KillproofIcons::KC); }, "1.3", [] {return to_string_long(Killproof::kc);}, false},
+	{Killproof::xera, [] {return to_string_short(Killproof::xera);}, []{ return draw_texture(KillproofIcons::Xera); }, "1.3", false},
 
 	// W4
-	{13, [] {return to_string_short(Killproof::cairn);}, []{ return GET_TEXTURE(Cairn, ID_Cairn); }, "1.4", [] {return to_string_long(Killproof::cairn);}, false},
-	{14, [] {return to_string_short(Killproof::mo);}, []{ return GET_TEXTURE(MO, ID_MO); }, "1.4", [] {return to_string_long(Killproof::mo);}, false},
-	{15, [] {return to_string_short(Killproof::samarog);}, []{ return GET_TEXTURE(Samarog, ID_Samarog); }, "1.4", false},
-	{16, [] {return to_string_short(Killproof::deimos);}, []{ return GET_TEXTURE(Deimos, ID_Deimos); }, "1.4", false},
+	{Killproof::cairn, [] {return to_string_short(Killproof::cairn);}, []{ return draw_texture(KillproofIcons::Cairn); }, "1.4", [] {return to_string_long(Killproof::cairn);}, false},
+	{Killproof::mo, [] {return to_string_short(Killproof::mo);}, []{ return draw_texture(KillproofIcons::MO); }, "1.4", [] {return to_string_long(Killproof::mo);}, false},
+	{Killproof::samarog, [] {return to_string_short(Killproof::samarog);}, []{ return draw_texture(KillproofIcons::Samarog); }, "1.4", false},
+	{Killproof::deimos, [] {return to_string_short(Killproof::deimos);}, []{ return draw_texture(KillproofIcons::Deimos); }, "1.4", false},
 
 	// W5
-	{17, [] {return to_string_short(Killproof::desmina);}, []{ return GET_TEXTURE(Desmina, ID_Desmina); }, "1.5", [] {return to_string_long(Killproof::desmina);}, false},
-	{18, [] {return to_string_short(Killproof::river);}, []{ return GET_TEXTURE(River, ID_River); }, "1.5", [] {return to_string_long(Killproof::river);}, false},
-	{19, [] {return to_string_short(Killproof::statues);}, []{ return GET_TEXTURE(Statues, ID_Statues); }, "1.5", false},
-	{20, [] {return to_string_short(Killproof::dhuum);}, []{ return GET_TEXTURE(Dhuum, ID_Dhuum); }, "1.5", true},
+	{Killproof::desmina, [] {return to_string_short(Killproof::desmina);}, []{ return draw_texture(KillproofIcons::Desmina); }, "1.5", [] {return to_string_long(Killproof::desmina);}, false},
+	{Killproof::river, [] {return to_string_short(Killproof::river);}, []{ return draw_texture(KillproofIcons::River); }, "1.5", [] {return to_string_long(Killproof::river);}, false},
+	{Killproof::statues, [] {return to_string_short(Killproof::statues);}, []{ return draw_texture(KillproofIcons::Statues); }, "1.5", false},
+	{Killproof::dhuum, [] {return to_string_short(Killproof::dhuum);}, []{ return draw_texture(KillproofIcons::Dhuum); }, "1.5", true},
 
 	// W6
-	{21, [] {return to_string_short(Killproof::ca);}, []{ return GET_TEXTURE(CA, ID_CA); }, "1.6", [] {return to_string_long(Killproof::ca);}, false},
-	{22, [] {return to_string_short(Killproof::twins);}, []{ return GET_TEXTURE(Twins, ID_Twins); }, "1.6", [] {return to_string_long(Killproof::twins);}, false},
-	{23, [] {return to_string_short(Killproof::qadim);}, []{ return GET_TEXTURE(Qadim1, ID_Qadim1); }, "1.6", true},
+	{Killproof::ca, [] {return to_string_short(Killproof::ca);}, []{ return draw_texture(KillproofIcons::CA); }, "1.6", [] {return to_string_long(Killproof::ca);}, false},
+	{Killproof::twins, [] {return to_string_short(Killproof::twins);}, []{ return draw_texture(KillproofIcons::Twins); }, "1.6", [] {return to_string_long(Killproof::twins);}, false},
+	{Killproof::qadim, [] {return to_string_short(Killproof::qadim);}, []{ return draw_texture(KillproofIcons::Qadim1); }, "1.6", true},
 
 	// W7
-	{24, [] {return to_string_short(Killproof::sabir);}, []{ return GET_TEXTURE(Sabir, ID_Sabir); }, "1.7", false},
-	{25, [] {return to_string_short(Killproof::adina);}, []{ return GET_TEXTURE(Adina, ID_Adina); }, "1.7", false},
-	{26, [] {return to_string_short(Killproof::qadim2);}, []{ return GET_TEXTURE(Qadim2, ID_Qadim2); }, "1.7", [] {return to_string_long(Killproof::qadim2);}, true},
+	{Killproof::sabir, [] {return to_string_short(Killproof::sabir);}, []{ return draw_texture(KillproofIcons::Sabir); }, "1.7", false},
+	{Killproof::adina, [] {return to_string_short(Killproof::adina);}, []{ return draw_texture(KillproofIcons::Adina); }, "1.7", false},
+	{Killproof::qadim2, [] {return to_string_short(Killproof::qadim2);}, []{ return draw_texture(KillproofIcons::Qadim2); }, "1.7", [] {return to_string_long(Killproof::qadim2);}, true},
+
+	// W8
+	{Killproof::greer, []{ return to_string_short(Killproof::greer); }, []{ return draw_texture(KillproofIcons::Greer); }, "1.8", [] {return to_string_long(Killproof::greer);}, false},
+	{Killproof::decima, []{ return to_string_short(Killproof::decima); }, []{ return draw_texture(KillproofIcons::Decima); }, "1.8", [] {return to_string_long(Killproof::decima);}, false},
+	{Killproof::ura, []{ return to_string_short(Killproof::ura); }, []{ return draw_texture(KillproofIcons::Ura); }, "1.8", true},
+
+	{Killproof::greerCM, []{ return to_string_short(Killproof::greerCM); }, []{ return draw_texture(KillproofIcons::Greer); }, "1.8", [] {return to_string_long(Killproof::greerCM);}, false},
+	{Killproof::decimaCM, []{ return to_string_short(Killproof::decimaCM); }, []{ return draw_texture(KillproofIcons::Decima); }, "1.8", [] {return to_string_long(Killproof::decimaCM);}, false},
+	{Killproof::uraCM, []{ return to_string_short(Killproof::uraCM); }, []{ return draw_texture(KillproofIcons::Ura); }, "1.8", true},
 
 	// Strikes
-	{27, [] {return to_string_short(Killproof::boneskinnerVial);}, []{ return GET_TEXTURE(Vial, ID_Boneskinner_Vial); }, "3", [] {return to_string_long(Killproof::boneskinnerVial);}, true},
+	{Killproof::boneskinnerVial, [] {return to_string_short(Killproof::boneskinnerVial);}, []{ return draw_texture(KillproofIcons::Boneskinner_Vial); }, "3", [] {return to_string_long(Killproof::boneskinnerVial);}, true},
 	
 	// EOD strikes
-	{35, [] {return to_string_short(Killproof::maiTrin);}, []{ return GET_TEXTURE_CUSTOM(MAI_TRIN_TEXTURE, ID_Mai_Trin); }, "3", [] {return to_string_long(Killproof::maiTrin);}, false},
-	{33, [] {return to_string_short(Killproof::ankka);}, []{ return GET_TEXTURE_CUSTOM(ANKKA_TEXTURE, ID_Ankka); }, "3", [] {return to_string_long(Killproof::ankka);}, false},
-	{37, [] {return to_string_short(Killproof::ministerLi);}, []{ return GET_TEXTURE_CUSTOM(LI_TEXTURE, ID_Minister_Li); }, "3", [] {return to_string_long(Killproof::ministerLi);}, false},
-	{34, [] {return to_string_short(Killproof::harvest);}, []{ return GET_TEXTURE_CUSTOM(HARVEST_TEXTURE, ID_Harvest); }, "3", [] {return to_string_long(Killproof::harvest);}, false},
-	{36, [] {return to_string_short(Killproof::maiTrinCM);}, []{ return GET_TEXTURE_CUSTOM(MAI_TRIN_TEXTURE, ID_Mai_Trin);  }, "3", [] {return to_string_long(Killproof::maiTrinCM);}, false},
-	{38, [] {return to_string_short(Killproof::ankkaCM);}, []{ return GET_TEXTURE_CUSTOM(ANKKA_TEXTURE, ID_Ankka); }, "3", [] {return to_string_long(Killproof::ankkaCM);}, false},
-	{39, [] {return to_string_short(Killproof::ministerLiCM);}, []{ return GET_TEXTURE_CUSTOM(LI_TEXTURE, ID_Minister_Li); }, "3", [] {return to_string_long(Killproof::ministerLiCM);}, false},
-	{40, [] {return to_string_short(Killproof::harvestCM);}, []{ return GET_TEXTURE_CUSTOM(HARVEST_TEXTURE, ID_Harvest); }, "3", [] {return to_string_long(Killproof::harvestCM);}, false},
-	{42, [] {return to_string_short(Killproof::olc);}, []{ return GET_TEXTURE_CUSTOM(OLC_TEXTURE, ID_OLC); }, "3", [] {return to_string_long(Killproof::olc);}, false},
-	{43, [] {return to_string_short(Killproof::olcCM);}, []{ return GET_TEXTURE_CUSTOM(OLC_TEXTURE, ID_OLC); }, "3", [] {return to_string_long(Killproof::olcCM);}, false},
-	{44, [] {return to_string_short(Killproof::co);}, []{ return GET_TEXTURE_CUSTOM(DAGDA_TEXTURE, ID_Dagda); }, "3", [] {return to_string_long(Killproof::co);}, false},
-	{45, [] {return to_string_short(Killproof::coCM);}, []{ return GET_TEXTURE_CUSTOM(DAGDA_TEXTURE, ID_Dagda); }, "3", [] {return to_string_long(Killproof::coCM);}, false},
-	{46, [] {return to_string_short(Killproof::febe);}, []{ return GET_TEXTURE_CUSTOM(CERUS_TEXTURE, ID_Cerus); }, "3", [] {return to_string_long(Killproof::febe);}, false},
+	{Killproof::maiTrin, []
+	{
+		return to_string_short(Killproof::maiTrin);
+	}, []{ return draw_texture(KillproofIcons::Mai_Trin); }, "3", [] {return to_string_long(Killproof::maiTrin);}, false},
+	{Killproof::ankka, [] {return to_string_short(Killproof::ankka);}, []{ return draw_texture(KillproofIcons::Ankka); }, "3", [] {return to_string_long(Killproof::ankka);}, false},
+	{Killproof::ministerLi, [] {return to_string_short(Killproof::ministerLi);}, []{ return draw_texture(KillproofIcons::Minister_Li); }, "3", [] {return to_string_long(Killproof::ministerLi);}, false},
+	{Killproof::harvest, [] {return to_string_short(Killproof::harvest);}, []{ return draw_texture(KillproofIcons::Harvest); }, "3", [] {return to_string_long(Killproof::harvest);}, false},
+	{Killproof::maiTrinCM, [] {return to_string_short(Killproof::maiTrinCM);}, []{ return draw_texture(KillproofIcons::Mai_Trin);  }, "3", [] {return to_string_long(Killproof::maiTrinCM);}, false},
+	{Killproof::ankkaCM, [] {return to_string_short(Killproof::ankkaCM);}, []{ return draw_texture(KillproofIcons::Ankka); }, "3", [] {return to_string_long(Killproof::ankkaCM);}, false},
+	{Killproof::ministerLiCM, [] {return to_string_short(Killproof::ministerLiCM);}, []{ return draw_texture(KillproofIcons::Minister_Li); }, "3", [] {return to_string_long(Killproof::ministerLiCM);}, false},
+	{Killproof::harvestCM, [] {return to_string_short(Killproof::harvestCM);}, []{ return draw_texture(KillproofIcons::Harvest); }, "3", [] {return to_string_long(Killproof::harvestCM);}, false},
+	{Killproof::olc, [] {return to_string_short(Killproof::olc);}, []{ return draw_texture(KillproofIcons::OLC); }, "3", [] {return to_string_long(Killproof::olc);}, false},
+	{Killproof::olcCM, [] {return to_string_short(Killproof::olcCM);}, []{ return draw_texture(KillproofIcons::OLC); }, "3", [] {return to_string_long(Killproof::olcCM);}, false},
+	{Killproof::co, [] {return to_string_short(Killproof::co);}, []{ return draw_texture(KillproofIcons::Dagda); }, "3", [] {return to_string_long(Killproof::co);}, false},
+	{Killproof::coCM, [] {return to_string_short(Killproof::coCM);}, []{ return draw_texture(KillproofIcons::Dagda); }, "3", [] {return to_string_long(Killproof::coCM);}, false},
+	{Killproof::febe, [] {return to_string_short(Killproof::febe);}, []{ return draw_texture(KillproofIcons::Cerus); }, "3", [] {return to_string_long(Killproof::febe);}, false},
+	{Killproof::febeCM, [] {return to_string_short(Killproof::febeCM);}, []{ return draw_texture(KillproofIcons::Cerus); }, "3", [] {return to_string_long(Killproof::febeCM);}, false},
+	{Killproof::kela, [] {return to_string_short(Killproof::kela);}, []{ return draw_texture(KillproofIcons::Sandcastle); }, "3", []{return to_string_long(Killproof::kela);}, false},
 
-	{41, [] {return to_string_short(Killproof::bananas);}, []{ return GET_TEXTURE(Bananas, ID_Bananas); }, "4", [] {return to_string_long(Killproof::bananas);}, false},
+	{Killproof::bananas, [] {return to_string_short(Killproof::bananas);}, []{ return draw_texture(KillproofIcons::Bananas); }, "4", [] {return to_string_long(Killproof::bananas);}, false},
 };
+
+constexpr const std::vector<size_t> Convert(const std::vector<Killproof> pVector)
+{
+	std::vector<size_t> res;
+	for (auto killproof : pVector)
+	{
+		res.push_back(std::to_underlying(killproof));
+	}
+	return res;
+}
+
+constexpr uint32_t AerodromeId = 1155;
+constexpr uint32_t AerodromeIdRaids = -1;
+constexpr uint32_t AerodromeIdStrikes = -2;
 
 // Key is the mapId found in the mumbleLink
 // Value is a vector of columns that should be shown for that map. The Values are the UserIds from the ColumnSetup.
 // TODO: update this when the above vector changes!
 static const std::unordered_map<uint32_t, std::vector<size_t>> mapIdToColumnSetup = {
-	{1155, {2, 7, 9, 12, 16, 20, 23, 26, 41}}, // Aerodrome
-	{1062, {2, 5, 6, 7}}, // W1
-	{1149, {2, 8, 9}}, // W2
-	{1156, {2, 10, 11, 12}}, // W3
-	{1188, {2, 13, 14, 15, 16}}, // W4
-	{1264, {2, 17, 18, 19, 20}}, // W5
-	{1303, {2, 21, 22, 23}}, // W6
-	{1323, {2, 24, 25, 26}}, // W7
-	{1370, {2, 27}}, // Eye of the north
-	{1432, {2, 35, 36}}, // MaiTrin strike
-	{1450, {2, 33, 38}}, // Ankka strike
-	{1451, {2, 37, 39}}, // MinisterLi strike
-	{1437, {2, 34, 40}}, // HarvestTemple strike
-	{1485, {2, 42, 43}}, // OLC Strike
-	{1428, {2, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43}}, // Arborstone
-	{1509, {2, 44, 45, 46}}, // Wizard's Tower
-	{1515, {2, 44, 45}}, // Cosmic Observatory
-	{1520, {2, 46}}, // Temple of Febe
+	// Aerodrome 
+	{AerodromeIdRaids, Convert({
+		Killproof::liLd,
+		Killproof::sabetha,
+		Killproof::matthias,
+		Killproof::xera,
+		Killproof::deimos,
+		Killproof::dhuum,
+		Killproof::qadim,
+		Killproof::qadim2,
+		Killproof::ura,
+		Killproof::uraCM
+	})},
+	{AerodromeIdStrikes, Convert({
+		Killproof::liLd,
+		Killproof::boneskinnerVial,
+		Killproof::olc,
+		Killproof::olcCM,
+		Killproof::maiTrin,
+		Killproof::maiTrinCM,
+		Killproof::ankka,
+		Killproof::ankkaCM,
+		Killproof::ministerLi,
+		Killproof::ministerLiCM,
+		Killproof::harvest,
+		Killproof::harvestCM,
+		Killproof::co,
+		Killproof::coCM,
+		Killproof::febe,
+		Killproof::febeCM,
+		Killproof::kela
+	})},
+	// W1
+	{1062, Convert({
+		Killproof::liLd,
+		Killproof::vg,
+		Killproof::gorse,
+		Killproof::sabetha
+	})},
+	// W2
+	{1149, Convert({
+		Killproof::liLd,
+		Killproof::sloth,
+		Killproof::matthias
+	})},
+	// W3
+	{1156, Convert({
+		Killproof::liLd,
+		Killproof::escort,
+		Killproof::kc,
+		Killproof::xera
+	})},
+	// W4
+	{1188, Convert({
+		Killproof::liLd,
+		Killproof::cairn,
+		Killproof::mo,
+		Killproof::samarog,
+		Killproof::deimos
+	})},
+	// W5
+	{1264, Convert({
+		Killproof::liLd,
+		Killproof::desmina,
+		Killproof::river,
+		Killproof::statues,
+		Killproof::dhuum
+	})},
+	// W6
+	{1303, Convert({
+		Killproof::liLd,
+		Killproof::ca,
+		Killproof::twins,
+		Killproof::qadim
+	})},
+	// W7
+	{1323, Convert({
+		Killproof::liLd,
+		Killproof::sabir,
+		Killproof::adina,
+		Killproof::qadim2
+	})},
+	// W8
+	{1564, Convert({
+		Killproof::liLd,
+		Killproof::greer,
+		Killproof::decima,
+		Killproof::ura,
+		Killproof::greerCM,
+		Killproof::decimaCM,
+		Killproof::uraCM
+	})},
+
+	// Eye of the north
+	{1370, Convert({
+		Killproof::liLd,
+		Killproof::boneskinnerVial
+	})},
+	
+	// IBS
+	// Shiverpeak
+	{1332, Convert({
+		Killproof::liLd,
+		Killproof::boneskinnerVial
+	})},
+	// Voice&Claw
+	{1346, Convert({
+		Killproof::liLd,
+		Killproof::boneskinnerVial
+	})},
+	// Jormag
+	{1341, Convert({
+		Killproof::liLd,
+		Killproof::boneskinnerVial
+	})},
+	// Boneskinner
+	{1339, Convert({
+		Killproof::liLd,
+		Killproof::boneskinnerVial
+	})},
+	// ???
+	{1359, Convert({
+		Killproof::liLd,
+		Killproof::boneskinnerVial
+	})},
+
+	// Strikes
+	// MaiTrin strike
+	{1432, Convert({
+		Killproof::liLd,
+		Killproof::maiTrin,
+		Killproof::maiTrinCM
+	})},
+	// Ankka strike
+	{1450, Convert({
+		Killproof::liLd,
+		Killproof::ankka,
+		Killproof::ankkaCM
+	})},
+	// MinisterLi strike
+	{1451, Convert({
+		Killproof::liLd,
+		Killproof::ministerLi,
+		Killproof::ministerLiCM
+	})},
+	// HarvestTemple strike
+	{1437, Convert({
+		Killproof::liLd,
+		Killproof::harvest,
+		Killproof::harvestCM
+	})},
+	// OLC Strike
+	{1485, Convert({
+		Killproof::liLd,
+		Killproof::olc,
+		Killproof::olcCM
+	})},
+	// Arborstone
+	{1428, Convert({
+		Killproof::liLd,
+		Killproof::maiTrin,
+		Killproof::ankka,
+		Killproof::ministerLi,
+		Killproof::harvest,
+		Killproof::olc,
+		Killproof::maiTrinCM,
+		Killproof::ankkaCM,
+		Killproof::ministerLiCM,
+		Killproof::harvestCM,
+		Killproof::olcCM
+	})},
+	// Wizard's Tower
+	{1509, Convert({
+		Killproof::liLd,
+		Killproof::co,
+		Killproof::febe,
+		Killproof::coCM,
+		Killproof::febeCM
+	})},
+	// Cosmic Observatory
+	{1515, Convert({
+		Killproof::liLd,
+		Killproof::co,
+		Killproof::coCM
+	})},
+	// Temple of Febe
+	{1520, Convert({
+		Killproof::liLd,
+		Killproof::febe,
+		Killproof::febeCM
+	})},
+	// Guardian's Glade
+	{1609, Convert({
+		Killproof::liLd,
+		Killproof::kela,
+	})},
+
+	// Fractals
+	// Lobby
+	{872, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Uncategorized
+	{947, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Snowblind
+	{948, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Swampland
+	{949, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Urban Battlegrounds
+	{950, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Aquatic Ruins
+	{951, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Cliffside
+	{952, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Underground
+	{953, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Volcanic
+	{954, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Molten
+	{955, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Aetherblade
+	{956, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Thaumonova
+	{957, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Solid Ocean
+	{958, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Molten Boss
+	{959, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Mai Trin
+	{960, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Chaos
+	{1164, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Nightmare
+	{1177, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Shattered
+	{1205, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Twilight
+	{1267, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Deepstone
+	{1290, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Sirens Reef
+	{1309, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Sunqua Peek
+	{1384, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Silent Serf
+	{1500, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Lonely Tower
+	{1538, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
+	// Frozen
+	{1584, Convert({
+		Killproof::uce,
+		Killproof::ufe,
+	})},
 };
 
 class KillproofUITable : public MainTable<> {
@@ -161,7 +492,7 @@ private:
 	bool drawRow(TableColumnIdx pFirstColumnIndex, const Player& pPlayer, bool pHasLinked, bool pTotal = false, bool pTotalText = false);
 
 	template<bool OpenBrowser = false, bool AlignmentActive = false>
-	void drawTextColumn(bool& pOpen, const std::string& pText, const std::string& pUsername, const std::atomic<LoadingStatus>& pStatus, bool pTreeNode, bool pIsCommander);
+	void drawTextColumn(bool& pOpen, const char* pText, const std::string& pUsername, const std::atomic<LoadingStatus>& pStatus, bool pTreeNode, bool pIsCommander);
 
 	void openInBrowser(const std::string& username);
 };
