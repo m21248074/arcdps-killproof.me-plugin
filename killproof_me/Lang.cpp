@@ -1,4 +1,4 @@
-#include "Lang.h"
+﻿#include "Lang.h"
 
 #include <modernIni/modernIni.h>
 // marked as unused, but actually needed ...
@@ -516,10 +516,134 @@ namespace
 		{KMT_UseCustomColumns, u8"Mostrar columnas basadas en el mapa"},
 	});
 
+	constexpr std::array KILLPROOF_ME_TRANSLATION_TCHINESE = std::to_array<std::pair<KillproofMeTranslations, const char8_t*>>({
+		{KMT_AccountName, u8"帳號"},
+		{KMT_CharacterName, u8"角色"},
+		{KMT_KillproofId, u8"ID"},
+		{KMT_SubgroupText, u8"小隊"},
+		{KMT_Li_Short, u8"傳奇見解(Legendary Insight, LI)"},
+		{KMT_Ld_Short, u8"傳奇預言(Legendary Divination, LD)"},
+		{KMT_LiLd_Short, u8"傳奇見解與預言(LI+LD)"},
+		{KMT_Uce_Short, u8"不穩定宇宙精華(Unstable Cosmic Essence, UCE)"},
+		{KMT_Ufe_Short, u8"不穩定碎層精華(Unstable Fractal Essence, UFE)"},
+		{KMT_Vg_Short, u8"山谷守護者(VG)"},
+		{KMT_Vg_Long, u8"山谷守護者(Vale Guardian)"},
+		{KMT_Gorse_Short, u8"戈瑟瓦爾(Gorse)"},
+		{KMT_Gorse_Long, u8"多變藤 戈瑟瓦爾(Gorseval the Multifarious)"},
+		{KMT_Sabetha_Short, u8"薩蓓莎(Sabetha)"},
+		{KMT_Sabetha_Long, u8"破壞者 薩蓓莎(Sabetha the Saboteur)"},
+		{KMT_Sloth_Short, u8"斯洛薩索(Slothasor)"},
+		{KMT_Matthias_Short, u8"馬蒂亞斯(Matthias)"},
+		{KMT_Matthias_Long, u8"馬蒂亞斯·加布瑞爾(Matthias Gabrel)"},
+		{KMT_Escort_Short, u8"護送(Escort)"},
+		{KMT_Kc_Short, u8"要塞構造體(KC)"},
+		{KMT_Kc_Long, u8"要塞構造體(Keep Construct)"},
+		{KMT_Xera_Short, u8"琦拉(Xera)"},
+		{KMT_Cairn_Short, u8"凱玲(Cairn)"},
+		{KMT_Cairn_Long, u8"不屈的凱玲(Cairn the Indomitable)"},
+		{KMT_Mo_Short, u8"末世魔監工(MO)"},
+		{KMT_Mo_Long, u8"末世魔監工(Mursaat Overseer)"},
+		{KMT_Samarog_Short, u8"薩瑪洛格(Samarog)"},
+		{KMT_Deimos_Short, u8"戴莫斯(Deimos)"},
+		{KMT_Desmina_Short, u8"德斯米娜(Desmina)"},
+		{KMT_Desmina_Long, u8"無魂懼魔(德斯米娜)(Soulless Horror, Desmina)"},
+		{KMT_River_Short, u8"魂河(River)"},
+		{KMT_River_Long, u8"魂河(River of Souls)"},
+		{KMT_Statues_Short, u8"三雕像(寒冰、死亡、黑暗)(Statues)"},
+		{KMT_Dhuum_Short, u8"虛空之聲 德姆(Dhuum)"},
+		{KMT_Ca_Short, u8"咒術融合體(CA)"},
+		{KMT_Ca_Long, u8"咒術融合體(Conjured Amalgamate)"},
+		{KMT_Twins_Short, u8"孿生蝶翼人(Twins)"},
+		{KMT_Twins_Long, u8"孿生蝶翼人(Twin Largos)"},
+		{KMT_Qadim_Short, u8"卡迪姆(Qadim)"},
+		{KMT_Sabir_Short, u8"基石守護者 薩比爾(Sabir)"},
+		{KMT_Adina_Short, u8"基石守護者 艾迪娜(Adina)"},
+		{KMT_Qadim2_Short, u8"無可匹敵的卡迪姆(Qadim2)"},
+		{KMT_Qadim2_Long, u8"無可匹敵的卡迪姆(Qadim the Peerless, QtP)"},
+		{KMT_Greer_Short, u8"格里爾(Greer)"},
+		{KMT_GreerCM_Short, u8"格里爾 挑戰模式(Greer CM)"},
+		{KMT_Greer_Long, u8"瘟疫使者格里爾(Greer, the Blightbringer)"},
+		{KMT_GreerCM_Long, u8"瘟疫使者格里爾 挑戰模式(Greer, the Blightbringer CM)"},
+		{KMT_Decima_Short, u8"迪西瑪(Decima)"},
+		{KMT_DecimaCM_Short, u8"迪西瑪 挑戰模式(Decima CM)"},
+		{KMT_Decima_Long, u8"風暴歌手迪西瑪(Decima, the Stormsinger)"},
+		{KMT_DecimaCM_Long, u8"風暴歌手迪西瑪 挑戰模式(Decima, the Stormsinger CM)"},
+		{KMT_Ura_Short, u8"厄拉(Ura)"},
+		{KMT_UraCM_Short, u8"厄拉 挑戰模式(Ura CM)"},
+		{KMT_BoneskinnerVial_Short, u8"骸骨剝皮怪儀式瓶(Vial)"},
+		{KMT_BoneskinnerVial_Long, u8"骸骨剝皮怪儀式瓶(Boneskinner Ritual Vial)"},
+		{KMT_Ankka_Short, u8"安卡(Ankka)"},
+		{KMT_Ankka_Long, u8"桑萊廢料場 安卡(Xunlai Jade Junkyard, Ankka)"},
+		{KMT_MinisterLi_Short, u8"凱寧瞭望台(KO)"},
+		{KMT_MinisterLi_Long, u8"凱寧瞭望台 李部長(Kaineng Overlook, Minister Li)"},
+		{KMT_Harvest_Short, u8"豐收神殿(HT)"},
+		{KMT_Harvest_Long, u8"豐收神殿 巨龍虛空(Harvest Temple, Dragonvoid)"},
+		{KMT_MaiTrin_Short, u8"美琴(Mai)"},
+		{KMT_MaiTrin_Long, u8"以太之刃的藏身處 美琴(Aetherblade Hideout, Mai Trin)"},
+		{KMT_MaiTrinCM_Short, u8"美琴 挑戰模式(Mai CM)"},
+		{KMT_MaiTrinCM_Long, u8"以太之刃的藏身處 美琴 挑戰模式(Aetherblade Hideout, Mai Trin CM)"},
+		{KMT_AnkkaCM_Short, u8"安卡 挑戰模式(Ankka CM)"},
+		{KMT_AnkkaCM_Long, u8"桑萊廢料場 安卡 挑戰模式(Xunlai Jade Junkyard ,Ankka CM)"},
+		{KMT_MinisterLiCM_Short, u8"凱寧瞭望台 挑戰模式(KO CM)"},
+		{KMT_MinisterLiCM_Long, u8"凱寧瞭望台 李部長 挑戰模式(Kaineng Overlook, Minister Li CM)"},
+		{KMT_HarvestCM_Short, u8"豐收神殿 挑戰模式(HT CM)"},
+		{KMT_HarvestCM_Long, u8"豐收神殿 巨龍虛空 挑戰模式(Harvest Temple, Dragonvoid CM)"},
+		{KMT_OLC_Short, u8"舊雄獅廣場(OLC)"},
+		{KMT_OLC_Long, u8"舊雄獅廣場 守望騎士三人小組(Old Lion's Court, Assault Knights)"},
+		{KMT_OLCCM_Short, u8"舊雄獅廣場 挑戰模式(OLC CM)"},
+		{KMT_OLCCM_Long, u8"舊雄獅廣場 守望騎士三人小組 挑戰模式(Old Lion's Court, Assault Knights CM)"},
+		{KMT_CO_Short, u8"宇宙觀測台(CO)"},
+		{KMT_CO_Long, u8"宇宙觀測台 德格達(Cosmic Observatory ,Dagda)"},
+		{KMT_COCM_Short, u8"宇宙觀測台 挑戰模式(CO CM)"},
+		{KMT_COCM_Long, u8"宇宙觀測台 德格達 挑戰模式(Cosmic Observatory ,Dagda CM)"},
+		{KMT_FEBE_Short, u8"菲勃神殿(Febe)"},
+		{KMT_FEBE_Long, u8"菲勃神殿 塞魯斯(Temple of Febe, Cerus)"},
+		{KMT_FEBECM_Short, u8"菲勃神殿 挑戰模式(Febe CM)"},
+		{KMT_FEBECM_Long, u8"菲勃神殿 塞魯斯 挑戰模式(Temple of Febe, Cerus CM)"},
+		{KMT_Kela_Short, u8"齊拉(Kela)"},
+		{KMT_Kela_Long, u8"波浪總管齊拉(Kela, Seneschal of Waves)"},
+		{KMT_KelaCM_Short, u8"齊拉 挑戰模式(Kela CM)"},
+		{KMT_KelaCM_Long, u8"波浪總管齊拉 挑戰模式(Kela, Seneschal of Waves CM)"},
+		{KMT_Bananas, u8"香蕉(Bananas)"},
+		{KMT_KpWindowNameDefault, u8"Killproof.me"},
+		{KMT_AppearAsInOptionDefault, u8"Killproof.me"},
+		{KMT_SettingsShowPrivateText, u8"私人帳號"},
+		{KMT_SettingsShowControls, u8"顯示控制列"},
+		{KMT_SettingsShowLinkedByDefault, u8"預設顯示連結帳號"},
+		{KMT_SettingsShowCommander, u8"顯示指揮官標誌"},
+		{KMT_SettingsBlockedText, u8"資料無法取得時顯示的文字"},
+		{KMT_ShowLinkedTotals, u8"直接顯示連結帳號的總計"},
+		{
+			KMT_UnofficialExtrasNotInstalled,
+			u8"未安裝 Unofficial Extras 插件。\n安裝它以啟用對其他地圖上玩家的追蹤。"
+		},
+		{KMT_AddPlayerTooltip, u8"輸入帳號、killproof.me ID 或角色名來搜尋並加入至列表"},
+		{KMT_AddPlayerText, u8"新增"},
+		{KMT_ClearText, u8"清除"},
+		{KMT_ClearTooltip, u8"刪除所有手動新增的玩家"},
+		{KMT_CopyKpIdText, u8"複製自己的 KP ID"},
+		{KMT_Overall, u8"Overall"},
+		{KMT_Killproofs, u8"徽記(Tokens)"},
+		{KMT_Coffers, u8"寶箱(Coffers)"},
+		{KMT_SettingsDisableESCText, u8"按 Esc 不要關閉 killproof.me 視窗"},
+		{KMT_SettingsCofferValue, u8"個徽記等於 1 個寶箱"},
+		{KMT_SettingsHideExtrasMessage, u8"隱藏要求安裝 Unofficial Extras 訊息"},
+		{KMT_SettingsClearCacheText, u8"清除快取"},
+		{KMT_SettingsClearCacheTooltip, u8"清除快取並重新載入所有玩家的 killproof.me 資料"},
+		{KMT_LanguageAsIngameTooltip, u8"僅在安裝了 Unofficial Extras 後才有效。否則將回到英語。"},
+		{KMT_Raids, u8"大型地下城(Raids)"},
+		{KMT_Fractals, u8"迷霧碎層(Fractals, FOTM)"},
+		{KMT_Strikes, u8"進攻任務(Strikes)"},
+		{KMT_Misc, u8"雜項"},
+		{KMT_MapBasedStrikes, u8"顯示進攻任務"},
+		{KMT_UseCustomColumns, u8"根據地圖顯示欄位"},
+	});
+
 	static_assert(KILLPROOF_ME_TRANSLATION_ENGLISH.size() == magic_enum::enum_count<KillproofMeTranslations>());
 	static_assert(KILLPROOF_ME_TRANSLATION_ENGLISH.size() == KILLPROOF_ME_TRANSLATION_GERMAN.size());
 	static_assert(KILLPROOF_ME_TRANSLATION_ENGLISH.size() == KILLPROOF_ME_TRANSLATION_FRENCH.size());
 	static_assert(KILLPROOF_ME_TRANSLATION_ENGLISH.size() == KILLPROOF_ME_TRANSLATION_SPANISH.size());
+	static_assert(KILLPROOF_ME_TRANSLATION_ENGLISH.size() == KILLPROOF_ME_TRANSLATION_TCHINESE.size());
 }
 
 void LoadAdditionalTranslations()
@@ -529,16 +653,19 @@ void LoadAdditionalTranslations()
 	localization.Load(ArcdpsExtension::Lang::French);
 	localization.Load(ArcdpsExtension::Lang::German);
 	localization.Load(ArcdpsExtension::Lang::Spanish);
+	localization.Load(ArcdpsExtension::Lang::TChinese);
 
 	localization.Load(ArcdpsExtension::Lang::English, ArcdpsExtension::UE_TRANSLATIONS_ENGLISH);
 	localization.Load(ArcdpsExtension::Lang::French, ArcdpsExtension::UE_TRANSLATIONS_FRENCH);
 	localization.Load(ArcdpsExtension::Lang::German, ArcdpsExtension::UE_TRANSLATIONS_GERMAN);
 	localization.Load(ArcdpsExtension::Lang::Spanish, ArcdpsExtension::UE_TRANSLATIONS_SPANISH);
+	localization.Load(ArcdpsExtension::Lang::TChinese, ArcdpsExtension::UE_TRANSLATIONS_TCHINESE);
 
 	localization.Load(ArcdpsExtension::Lang::English, KILLPROOF_ME_TRANSLATION_ENGLISH);
 	localization.Load(ArcdpsExtension::Lang::French, KILLPROOF_ME_TRANSLATION_FRENCH);
 	localization.Load(ArcdpsExtension::Lang::German, KILLPROOF_ME_TRANSLATION_GERMAN);
 	localization.Load(ArcdpsExtension::Lang::Spanish, KILLPROOF_ME_TRANSLATION_SPANISH);
+	localization.Load(ArcdpsExtension::Lang::TChinese, KILLPROOF_ME_TRANSLATION_TCHINESE);
 }
 
 void LoadTranslationFiles()
