@@ -1,48 +1,43 @@
 #include "SettingsUI.h"
 
-#include <Windows.h>
-
-#include "Player.h"
-#include "Settings.h"
 #include "global.h"
 #include "Lang.h"
+#include "Player.h"
+#include "Settings.h"
 
-#include "ArcdpsExtension/KeyBindHandler.h"
-#include "ArcdpsExtension/KeyInput.h"
-#include "ArcdpsExtension/Widgets.h"
-
+#include <ArcdpsExtension/KeyBindHandler.h>
+#include <ArcdpsExtension/KeyInput.h>
+#include <ArcdpsExtension/Widgets.h>
 #include <imgui/imgui.h>
-
-namespace {
-	const std::map<LanguageSetting, std::function<std::string()>> PopupText = {
-		{LanguageSetting::LikeGame, []() { return std::string(Localization::STranslate(KMT_LanguageAsIngameTooltip)); }},
-		{LanguageSetting::German, []() { return std::string(Localization::STranslate(KMT_LanguageGermanTooltip)); }},
-		{LanguageSetting::French, []() { return std::string(Localization::STranslate(KMT_LanguageFrenchTooltip)); }},
-		{LanguageSetting::Spanish, []() { return std::string(Localization::STranslate(KMT_LanguageSpanishTooltip)); }},
-		{LanguageSetting::Chinese, []() { return std::string(Localization::STranslate(KMT_LanguageChineseTooltip)); }},
-		{LanguageSetting::TChinese, []() { return std::string(Localization::STranslate(KMT_LanguageChineseTooltip)); }},
-	};
-}
 
 void SettingsUI::Draw() {
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.f, 0.f});
 
 	Settings& settings = Settings::instance();
+	auto& localization = Localization::instance();
 
-	
-	if (ImGuiEx::EnumCombo(Localization::STranslate(ET_Language).data(), settings.settings.language, magic_enum::enum_values<LanguageSetting>(), PopupText)) {
-		if (settings.settings.language == LanguageSetting::LikeGame) {
-			Localization::SChangeLanguage(static_cast<gwlanguage>(GlobalObjects::CURRENT_LANGUAGE));
-		} else {
-			Localization::SChangeLanguage(static_cast<gwlanguage>(settings.settings.language));
+	auto langLabel = std::format("{}###boontable_language", localization.Translate(ArcdpsExtension::ET_Language));
+	auto langLabelPreview = settings.settings.language2 == ::Lang::LikeGame ? localization.Translate(ArcdpsExtension::ET_LikeInGame) : localization.Translate(settings.settings.language2, ArcdpsExtension::ET_LanguageName);
+	if (ImGui::BeginCombo(langLabel.c_str(), langLabelPreview.data())) {
+		for (auto& language : localization.GetLanguages()) {
+			if (ImGui::Selectable(std::format("{}##{}", localization.Translate(language, ET_LanguageName), language).c_str(), language == settings.settings.language2)) {
+				settings.SetLanguage(language);
+			}
 		}
+		if (ImGui::Selectable(std::format("{}##{}", localization.Translate(ArcdpsExtension::ET_LikeInGame), ::Lang::LikeGame).c_str())) {
+			settings.SetLanguage(::Lang::LikeGame);
+		}
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("%s", Localization::STranslate(KMT_LanguageAsIngameTooltip).data());
+		}
+
+		ImGui::EndCombo();
 	}
 
 	// Setting to select, which key is used to open the killproofs menu (will also close it)
 	KeyBinds::Modifier arcdpsModifier = KeyBindHandler::GetArcdpsModifier();
 	KeyBinds::Key oldKey = settings.settings.windowKey;
-	if (ImGuiEx::KeyCodeInput(Localization::STranslate(ET_Shortcut).data(), settings.settings.windowKey,
-	                          settings.settings.language==LanguageSetting::LikeGame?GlobalObjects::CURRENT_LANGUAGE:static_cast<Language>(settings.settings.language), GlobalObjects::CURRENT_HKL,
+	if (ImGuiEx::KeyCodeInput(Localization::STranslate(ET_Shortcut).data(), settings.settings.windowKey,GlobalObjects::CURRENT_HKL,
 	                          ImGuiEx::KeyCodeInputFlags_FixedModifier, arcdpsModifier)) {
 		KeyBindHandler::instance().UpdateKeys(oldKey, settings.settings.windowKey);
 	}
@@ -50,12 +45,7 @@ void SettingsUI::Draw() {
 	ImGui::Checkbox(Localization::STranslate(KMT_SettingsDisableESCText).data(), &settings.settings.disableEscClose);
 	int& cofferValue = settings.settings.cofferValue;
 	if (ImGui::InputInt(Localization::STranslate(KMT_SettingsCofferValue).data(), &cofferValue)) {
-		if (cofferValue < 0) {
-			cofferValue = 0;
-		}
-		if (cofferValue > 5) {
-			cofferValue = 5;
-		}
+		cofferValue = std::clamp(cofferValue, 0, 5);
 	}
 
 	ImGui::Checkbox(Localization::STranslate(KMT_SettingsHideExtrasMessage).data(), &settings.settings.hideExtrasMessage);
@@ -65,7 +55,7 @@ void SettingsUI::Draw() {
 
 		// get all accountnames and charnames
 		std::list<Player> usersToKeep;
-		for (std::string trackedPlayer : trackedPlayers) {
+		for (const std::string& trackedPlayer : trackedPlayers) {
 			const Player& player = cachedPlayers.at(trackedPlayer);
 			usersToKeep.emplace_back(player.username, player.addedBy, player.self, player.characterName, player.id);
 		}

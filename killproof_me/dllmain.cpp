@@ -3,28 +3,26 @@
 #include "Settings.h"
 #include "SettingsUI.h"
 
-#include "ArcdpsExtension/arcdps_structs.h"
-#include "ArcdpsExtension/KeyBindHandler.h"
-#include "ArcdpsExtension/KeyInput.h"
-#include "ArcdpsExtension/MumbleLink.h"
-#include "ArcdpsExtension/UpdateChecker.h"
-#include "ArcdpsExtension/Windows/PositioningComponent.h"
-#include "ArcdpsExtension/Windows/Demo/DemoTableWindow.h"
-#include "ArcdpsExtension/Windows/Demo/DemoWindow.h"
-#include "ArcdpsExtension/SimpleNetworkStack.h"
-
 #include <d3d11.h>
 #include <d3d9.h>
 #include <format>
-#include <imgui/imgui.h>
 #include <mutex>
-#include <Windows.h>
+#include <windows.h>
+#include <ArcdpsExtension/arcdps_structs.h>
+#include <ArcdpsExtension/KeyBindHandler.h>
+#include <ArcdpsExtension/KeyInput.h>
+#include <ArcdpsExtension/MumbleLink.h>
+#include <ArcdpsExtension/SimpleNetworkStack.h>
+#include <ArcdpsExtension/UpdateChecker.h>
+#include <ArcdpsExtension/Windows/PositioningComponent.h>
+#include <ArcdpsExtension/Windows/Demo/DemoTableWindow.h>
+#include <ArcdpsExtension/Windows/Demo/DemoWindow.h>
+#include <imgui/imgui.h>
 
 namespace {
 	HMODULE SELF_DLL;
 	HMODULE ARC_DLL;
-	IDirect3DDevice9* d3d9Device = nullptr;
-	ID3D11Device* d3d11Device = nullptr;
+	CComPtr<ID3D11Device> d3d11Device = nullptr;
 	arcdps_exports arc_exports = {};
 	LPVOID mapViewOfMumbleFile = nullptr;
 
@@ -377,6 +375,8 @@ arcdps_exports* mod_init() {
 		IconLoader::init(SELF_DLL, d3d11Device);
 		RegisterIcons();
 
+		LoadTranslationFiles();
+
 		// Clear old Files
 		updateChecker.ClearFiles(SELF_DLL);
 
@@ -402,7 +402,7 @@ arcdps_exports* mod_init() {
 
 		LoadAdditionalTranslations();
 		// load current language
-		Localization::instance().ChangeLanguage(static_cast<gwlanguage>(Settings::instance().GetLanguage()));
+		Localization::instance().ChangeLanguage(Settings::instance().GetLanguage());
 
 		// windows init
 #if _DEBUG
@@ -447,6 +447,31 @@ arcdps_exports* mod_init() {
 	return &arc_exports;
 }
 
+void GetD3DDevice(void* dxptr) {
+	auto swapChain = static_cast<IDXGISwapChain*>(dxptr);
+	if (FAILED(swapChain->GetDevice(IID_PPV_ARGS(&d3d11Device)))) {
+		ARC_LOG("Boon Table: Failed to get D3D device");
+		ARC_LOG_FILE("Boon Table: Failed to get D3D device");
+		d3d11Device = nullptr;
+	}
+
+	CComPtr<ID3D11Texture2D> backBuffer = nullptr;
+	if (FAILED(swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)))) {
+		ARC_LOG("Boon Table: Failed to get backbuffer");
+		ARC_LOG_FILE("Boon Table: Failed to get backbuffer");
+		return;
+	}
+
+	CComPtr<ID3D11Device> bbid3d11d = nullptr;
+	backBuffer->GetDevice(&bbid3d11d);
+
+	if (bbid3d11d && d3d11Device != bbid3d11d) {
+		ARC_LOG("Boon Table: SmoothMotion workaround");
+		ARC_LOG_FILE("Boon Table: SmoothMotion workaround");
+		d3d11Device = bbid3d11d;
+	}
+}
+
 /* export -- arcdps looks for this exported function and calls the address it returns on client load */
 extern "C" __declspec(dllexport) void* get_init_addr(char* arcversionstr, ImGuiContext* imguicontext, void* dxptr,
 													 HMODULE new_arcdll, void* mallocfn,
@@ -461,8 +486,7 @@ extern "C" __declspec(dllexport) void* get_init_addr(char* arcversionstr, ImGuiC
 	ARC_LOG = (e3_func_ptr)GetProcAddress(ARC_DLL, "e8");
 
 	// dx11 not available in older arcdps versions
-	auto swapChain = static_cast<IDXGISwapChain*>(dxptr);
-	swapChain->GetDevice(__uuidof(d3d11Device), reinterpret_cast<void**>(&d3d11Device));
+	GetD3DDevice(dxptr);
 
 	// install imgui hooks
 	PositioningComponentImGuiHook::InstallHooks(imguicontext);
@@ -472,6 +496,10 @@ extern "C" __declspec(dllexport) void* get_init_addr(char* arcversionstr, ImGuiC
 
 /* release mod -- return ignored */
 uintptr_t mod_release() {
+#ifdef _DEBUG
+	SaveTranslationFile();
+#endif
+
 	// finish and clear updateState
 	if (GlobalObjects::UPDATE_STATE) {
 		GlobalObjects::UPDATE_STATE->FinishPendingTasks();
@@ -588,10 +616,10 @@ void squad_update_callback(const UserInfo* updatedUsers, size_t updatedUsersCoun
 }
 
 void language_changed_callback(Language pNewLanguage) {
-	GlobalObjects::CURRENT_LANGUAGE = pNewLanguage;
+	GlobalObjects::CURRENT_LANGUAGE = Localization::ToLangCode(pNewLanguage);
 
-	if (Settings::instance().settings.language == LanguageSetting::LikeGame) {
-		Localization::SChangeLanguage(static_cast<gwlanguage>(GlobalObjects::CURRENT_LANGUAGE));
+	if (Settings::instance().settings.language2 == ::Lang::LikeGame) {
+		Localization::SChangeLanguage(GlobalObjects::CURRENT_LANGUAGE);
 	}
 }
 
