@@ -15,8 +15,8 @@ add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
 # Translations are UTF-8 and some are used as std::format format strings. Without /utf-8 MSVC checks them against the
-# system code page, which throws on double-byte code pages (e.g. 950). std::vformat is inline, so this has to match
-# arcdps-extension (see vcpkg-overlay/README.md).
+# system code page, which throws on double-byte code pages (e.g. 950). std::vformat is inline and the linker keeps only one
+# copy, so the addon has to use /utf-8 like the vcpkg libraries (vcpkg adds it to every port by default).
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 find_package(ArcdpsExtension CONFIG REQUIRED)

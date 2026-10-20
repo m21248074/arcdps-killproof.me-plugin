@@ -69,8 +69,10 @@ A freshly linked exe can fail with "Access is denied" for a few seconds (antivir
 Some translations are used as `std::format` format strings (`ET_UpdateDesc` in arcdps-extension). Without `/utf-8` MSVC checks
 them against the system code page, and on a double-byte one (cp950, Traditional Chinese) it throws `Invalid encoded
 character in format string.` The addon then dies with `0xC0000409` as soon as the language is switched to zh-TW.
-`std::vformat` is inline, so the flag must be set for **both** the addon (`CMakeLists.txt`, `add_compile_options`) and
-arcdps-extension (the overlay port sets `VCPKG_CXX_FLAGS`); the linker keeps only one copy.
+`std::vformat` is inline: both the addon and arcdps-extension instantiate it and the linker keeps only one copy. vcpkg builds
+every port with `/utf-8` by default (`scripts/toolchains/windows.cmake`), so arcdps-extension already has it; the addon
+doesn't, so it must set it itself (`CMakeLists.txt`, `add_compile_options`). Without that the addon's copy is the one that
+is kept and the crash happens.
 
 ## Testing without the game
 

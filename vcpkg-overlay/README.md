@@ -28,9 +28,10 @@ MSVC checks format strings against the system code page. On a double-byte code p
 Chinese) this throws `Invalid encoded character in format string.` and the addon crashes as soon as the language is
 switched to Traditional Chinese.
 
-`std::vformat` is inline, so the flag has to be set for **both** the addon and arcdps-extension (the linker keeps only
-one copy). The `arcdps-extension` overlay port adds it for the library (`VCPKG_CXX_FLAGS` in its `portfile.cmake`);
-the addon gets it from `add_compile_options` in `CMakeLists.txt`.
+`std::vformat` is inline: both the addon and arcdps-extension instantiate it and the linker keeps only one copy. vcpkg builds
+every port with `/utf-8` by default (`scripts/toolchains/windows.cmake`), so arcdps-extension already has it. The addon
+doesn't, so it sets it itself with `add_compile_options` in `CMakeLists.txt`; without that the addon's copy is the one that
+is kept and the crash happens. No flag is needed in the overlay ports.
 
 ## Updating
 

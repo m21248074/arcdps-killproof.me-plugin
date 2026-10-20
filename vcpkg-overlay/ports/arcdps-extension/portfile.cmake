@@ -16,13 +16,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
 	curl                ARCDPS_EXTENSION_CURL
 )
 
-# Translations are UTF-8 and are used as std::format format strings (ET_UpdateDesc). Without /utf-8 MSVC validates them
-# against the system code page, so e.g. a cp950 (Traditional Chinese) system throws "Invalid encoded character".
-if(VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_MINGW)
-    string(APPEND VCPKG_CXX_FLAGS " /utf-8")
-    string(APPEND VCPKG_C_FLAGS " /utf-8")
-endif()
-
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
 	OPTIONS
