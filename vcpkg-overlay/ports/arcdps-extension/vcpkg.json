@@ -1,0 +1,57 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "arcdps-extension",
+  "version": "2.5.0",
+  "port-version": 1,
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    "magic-enum",
+    "nlohmann-json"
+  ],
+  "default-features": [
+    "curl",
+    "imgui",
+    "unofficial-extras"
+  ],
+  "features": {
+    "curl": {
+      "description": "make tools available, that depend on curl",
+      "dependencies": [
+        {
+          "name": "curl",
+          "default-features": false,
+          "features": [
+            "non-http",
+            "openssl"
+          ]
+        }
+      ]
+    },
+    "imgui": {
+      "description": "make imgui tools available",
+      "dependencies": [
+        "imgui",
+        "rapidfuzz-cpp"
+      ]
+    },
+    "unofficial-extras": {
+      "description": "make tools available, that depend on arcdps-unofficial-extras",
+      "dependencies": [
+        "arcdps-unofficial-extras"
+      ]
+    },
+    "tests": {
+      "description": "Build the GTest executable",
+      "dependencies": [
+        "gtest"
+      ]
+    }
+  }
+}
