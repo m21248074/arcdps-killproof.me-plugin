@@ -14,11 +14,12 @@ Both forks add Traditional Chinese (`Language::TChinese`, `UE_TRANSLATIONS_TCHIN
 ```bat
 set VCPKG_ROOT=<path to vcpkg>
 set VCPKG_OVERLAY_PORTS=<repo>\vcpkg-overlay\ports
-cmake --preset release-windows -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /EHsc /utf-8"
+cmake --preset release-windows
 cmake --build --preset release-windows
 ```
 
-`/utf-8` is required, see below.
+`/utf-8` is required, see below. It is set in this branch's `CMakeLists.txt` (`add_compile_options`), so no extra
+flag is needed on the command line.
 
 ## Why `/utf-8`
 
@@ -28,8 +29,8 @@ Chinese) this throws `Invalid encoded character in format string.` and the addon
 switched to Traditional Chinese.
 
 `std::vformat` is inline, so the flag has to be set for **both** the addon and arcdps-extension (the linker keeps only
-one copy). The `arcdps-extension` overlay port already adds it for the library; the addon needs it via
-`CMAKE_CXX_FLAGS` as shown above.
+one copy). The `arcdps-extension` overlay port adds it for the library (`VCPKG_CXX_FLAGS` in its `portfile.cmake`);
+the addon gets it from `add_compile_options` in `CMakeLists.txt`.
 
 ## Updating
 
